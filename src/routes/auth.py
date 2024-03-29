@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends, status, Path, Query, Security
+from fastapi import APIRouter, HTTPException, status, Depends, Path, Query, Security
 from fastapi.security import OAuth2PasswordRequestForm, HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -12,17 +12,12 @@ get_refresh_token = HTTPBearer()
 
 @router.post("/signup", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 async def signup(body: UserSchema, db: AsyncSession = Depends(get_db)):
-    try:
-        exist_user = await repositories_users.get_user_by_email(body.email, db)
-        if exist_user:
-            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Account already exists")
-        body.password = auth_service.get_password_hash(body.password)
-        new_user = await repositories_users.create_user(body, db)
-        return new_user
-    except Exception as err:
-        print(f"An error occurred during signup: {err}")
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                            detail="An unexpected error occurred during signup")
+    exist_user = await repositories_users.get_user_by_email(body.email, db)
+    if exist_user:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Account already exists")
+    body.password = auth_service.get_password_hash(body.password)
+    new_user = await repositories_users.create_user(body, db)
+    return new_user
 
 @router.post("/login", response_model=TokenSchema)
 async def login(body: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
