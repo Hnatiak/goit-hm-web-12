@@ -9,12 +9,16 @@ from jose import JWTError, jwt
 
 from src.database.db import get_db
 from src.repository import users as repository_users
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 class Auth:
 
     pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-    SECRET_KEY = "436bd27341550e7efdd4d1ce1eec9f909234d9fd4533c5a658bc63f80f262cfd" # TODO прибрати в .env файл
-    ALGORITHM = "HS256"
+    SECRET_KEY = os.getenv("SECRET_KEY")
+    ALGORITHM = os.getenv("ALGORITHM")
 
     def verify_password(self, plain_password, hashed_password):
         return self.pwd_context.verify(plain_password, hashed_password)
